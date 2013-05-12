@@ -48,12 +48,10 @@ class Traad extends Thread {
 
 	int minsteLengde;
 
-	String[] liste;//Liste med alle ord
-	String[] delt;//Oppdelt liste for hver traad
+	String[] liste;
+	String[] delt;
 
-	Traad[] total;//Traadarray med oversikt over alle traader
-
-	boolean mor = false;//Kun starttraaden er sjef.
+	Traad[] total;
 
     //    Traad mor;
 
@@ -72,12 +70,10 @@ class Traad extends Thread {
     	minsteLengde= y;
     	total = new Traad[antallTrader];
     	this.antallTrader = antallTrader;
-    	this.modul = modul;
+    	this.modul = 0;
 
     	sta = 0;
     	slu = minsteLengde;
-
-    	boolean mor = true;
 
     	opprett();
 
@@ -87,56 +83,24 @@ class Traad extends Thread {
     	this.delt = delt;
     }
 
-    public String[] flett(String[] tmp1, String [] tmp2) {
-    	int lengde = tmp1.length + tmp2.length;
-
-    	String[] flettet = new String[lengde];
-
-    	int a = 0;
-    	int b = 0;
-    	int i = 0;
-
-    	while(tmp1[a]!=null || tmp2[b]!=null) {
-
-    		if (tmp1[a].compareTo(tmp2[b]) < 0) {
-    			flettet[i] = tmp1[a];
-    			i++;
-    			a++;
-    		} else {
-    			flettet[i] = tmp2[b];
-    			i++;
-    			b++;
-    		}
-
-
-    	}
-
-    	return flettet;
-
-    }
-
     public void opprett() {
-
-   // 	System.out.format("Start system %d\n", liste.length);
 
     	for (int i = 0; i<antallTrader; i++) {
 
-    		if (i == antallTrader - 1) {
-    			slu = slu + modul;
+    		if (modul!=0) {
+    			slu++;
+    			modul--;
     		}
-
-    		//System.out.format("%d Start %d slutt %d\n", i, sta, slu);
-
-    		total[i] = new Traad(Arrays.copyOfRange(liste, sta, slu));
-
-    		//System.out.println(total[i].delt.length);
+    		delt = Arrays.copyOfRange(liste, sta, slu);
 
     		sta = slu+1;
-    		slu = slu + minsteLengde;
+    		//slu = sta+minsteLengde;
+    		slu = Math.min(sta + minsteLengde, liste.length);
 
-
-
+    		total[i] = new Traad(delt);
+    		System.out.println(total[i].delt.length);
     		total[i].start();
+    		//System.out.println("Waiter?");
     	}
 
     }
@@ -152,27 +116,17 @@ class Traad extends Thread {
 
     	}
 
-    }
+}
 
-    public void run() {
+public void run() {
 
-    	if(delt!=null) {
+	if(delt!=null) {
 		//System.out.println(delt.length);
 
-    		sorter();
-    	}
+		sorter();
+	}
 
-    	if(mor) {
-
-    		String[] forsok = flett(total[0].delt, total[1].delt);
-    		//System.out.println("Kommer jeg hit?");
-    		for (int i = 0; i < forsok.length; i++) {
-    			System.out.println(forsok[i]);
-    		}
-
-    	}
-
-    }
+}
 
 }
 
