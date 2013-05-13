@@ -117,7 +117,6 @@ class Sjef extends Thread {
             for (; i<modul; i++) {
                // System.out.format("%d X Start %d slutt %d: ML: %d\n", i, sta, slu, minsteLengde);
                 total[i] = new SorterTraad(Arrays.copyOfRange(liste, sta, slu), this);
-                antallTrader++;//usikker paa plassering
                 sta = slu+1;
                 slu = slu + minsteLengde;
                 total[i].start();
@@ -140,6 +139,17 @@ class Sjef extends Thread {
     public void run() {
 
         opprett();
+
+        if(ferdig.size()==1) {
+
+            String[] lost = ferdig.poll();
+            for (int i = 0; i<lost.length; i++) {
+
+                System.out.println(lost[i]);
+
+            }
+
+        }
 
      //   String[] forsok = fletter.flett(total[0].delt, total[1].delt);
       //  System.out.println("Kommer jeg hit?");
