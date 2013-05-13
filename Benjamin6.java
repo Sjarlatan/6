@@ -64,6 +64,8 @@ class Sjef extends Thread {
     int antallTrader = 0;
     int antallFlettet = 0;
 
+    int traadTeller;
+
     Sjef(String[] ord, int y, int antallTrader, int modul) {//Rotkonstruktor
 
     //  sta = 0;
@@ -73,6 +75,7 @@ class Sjef extends Thread {
         minsteLengde= y;
         total = new SorterTraad[antallTrader];
         this.antallTrader = antallTrader;
+        traadTeller = antallTrader;
         this.modul = modul;
 
        // fletter = new Fletter(this);
@@ -86,7 +89,7 @@ class Sjef extends Thread {
 
     void pushSorter(String[] s) {
 
-        antallTrader--;
+        traadTeller--;
         ferdig.add(s);
 
         if (ferdig.size()>1) {
