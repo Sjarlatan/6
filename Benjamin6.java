@@ -52,12 +52,10 @@ class Sjef extends Thread {
 
     String[] liste;//Liste med alle ord
 
-    Traad[] total;//Traadarray med oversikt over alle traader
+    SorterTraad[] total;//Traadarray med oversikt over alle traader
 
     Fletter fletter;
     ArrayBlockingQueue <String[]> ferdig;
-
-    boolean mor = false;//Kun starttraaden er sjef.
 
     int sta = 0;//Start
     int slu = 0;//Slutt
@@ -65,7 +63,6 @@ class Sjef extends Thread {
     int modul = 0;
     int antallTrader = 0;
     int antallFlettet = 0;
-    int antallSortert = 0;
 
     Sjef(String[] ord, int y, int antallTrader, int modul) {//Rotkonstruktor
 
@@ -74,7 +71,7 @@ class Sjef extends Thread {
 
         liste = ord;
         minsteLengde= y;
-        total = new Traad[antallTrader];
+        total = new SorterTraad[antallTrader];
         this.antallTrader = antallTrader;
         this.modul = modul;
 
@@ -85,36 +82,26 @@ class Sjef extends Thread {
         sta = 0;
         slu = minsteLengde-1;//Fra null, ikke 1.
 
-        boolean mor = true;
-
-        opprett();
-
     }
 
     void pushSorter(String[] s) {
 
-
-             //   sjef.antallFlettet++;
         antallTrader--;
-        antallSortert++;
         ferdig.add(s);
 
-        if (antallSortert>1) {
+        if (ferdig.remainingCapacity()>1) {
             String[] tmp1 = ferdig.poll();
             String[] tmp2 = ferdig.poll();
-            antallSortert--;
-            antallSortert--;
 
-            fletter.flett(tmp1, tmp2);
+            pushFlett(fletter.flett(tmp1, tmp2));
 
         }
-         //  System.out.println("Antall traader: " + sjef.antallTrader);
-           // System.out.println("Antall ferdige: " + sjef.antallFerdige);
 
     }
 
-    void pushFlett() {
+    void pushFlett(String[] s) {
 
+        ferdig.add(s);
         antallFlettet++;
 
     }
@@ -129,7 +116,7 @@ class Sjef extends Thread {
 
             for (; i<modul; i++) {
                // System.out.format("%d X Start %d slutt %d: ML: %d\n", i, sta, slu, minsteLengde);
-                total[i] = new Traad(Arrays.copyOfRange(liste, sta, slu), this);
+                total[i] = new SorterTraad(Arrays.copyOfRange(liste, sta, slu), this);
                 antallTrader++;//usikker paa plassering
                 sta = slu+1;
                 slu = slu + minsteLengde;
@@ -141,7 +128,7 @@ class Sjef extends Thread {
         for (; i<antallTrader; i++) {
            // System.out.format("%d Start %d slutt %d: ML: %d\n", i, sta, slu, minsteLengde);
 
-            total[i] = new Traad(Arrays.copyOfRange(liste, sta, slu), this);
+            total[i] = new SorterTraad(Arrays.copyOfRange(liste, sta, slu), this);
             sta = slu+1;
             slu = slu + minsteLengde;
 
@@ -151,6 +138,8 @@ class Sjef extends Thread {
     }
 
     public void run() {
+
+        opprett();
 
      //   String[] forsok = fletter.flett(total[0].delt, total[1].delt);
             System.out.println("Kommer jeg hit?");
@@ -162,49 +151,29 @@ class Sjef extends Thread {
 
 }
 
-class Traad extends Thread {
+class SorterTraad extends Thread {
 
     Sorter sorter;
         String[] delt;//Oppdelt liste for hver traad
         Sjef sjef;
-  //  int antallFerdige = 0;
-  //  int antallFlettet = 0;
 
-        Traad(String[] delt, Sjef sjef) {
+        SorterTraad(String[] delt, Sjef sjef) {
          this.delt = delt;
          this.sjef = sjef;
-     //   sjef.antallTrader++;
-         sorter = new Sorter(this);
      }
 
      public void run() {
 
          if(delt!=null) {
-		//System.out.println(delt.length);
 
-            sorter.sort(delt, 0, delt.length-1);
+            sort(delt, 0, delt.length-1);
             sjef.pushSorter(delt);
-    	//	sorter();
+
         }
 
     }
 
-}
-
-class Sorter extends Thread {
-
-    Traad hovedtraad;
-    Sorter(Traad traad){
-
-        hovedtraad = traad;
-
-    }
-
-  //  public void run() {
-        //?
-  //  }
-
-    void sort(String[] s, int start, int slutt) {
+        void sort(String[] s, int start, int slutt) {
         if (slutt > start) {
             int pivot = partisjon(s, start, slutt);
             sort(s, start, pivot-1);
@@ -304,7 +273,7 @@ class Innleser {
 
 			int y = antall / antallTrader;
 			int modul = antall % antallTrader;
-			System.out.println(modul);
+			//System.out.println(modul);
 
 			liste = new String[antall];
 			f.nextLine();
