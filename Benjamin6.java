@@ -54,7 +54,7 @@ class Sjef extends Thread {
 
     SorterTraad[] total;//Traadarray med oversikt over alle traader
 
-    Fletter fletter;
+  //  Fletter fletter;
     ArrayBlockingQueue <String[]> ferdig;
 
     int sta = 0;//Start
@@ -93,10 +93,7 @@ class Sjef extends Thread {
             String[] tmp1 = ferdig.poll();
             String[] tmp2 = ferdig.poll();
 
-            fletter = new Fletter(this, tmp1, tmp2);
-            fletter.start();
-
-          //  pushFlett(fletter.flett(tmp1, tmp2));
+            new Fletter(this, tmp1, tmp2).start();
 
         }
 
@@ -145,7 +142,7 @@ class Sjef extends Thread {
         opprett();
 
      //   String[] forsok = fletter.flett(total[0].delt, total[1].delt);
-        System.out.println("Kommer jeg hit?");
+      //  System.out.println("Kommer jeg hit?");
       //  for (int i = 0; i < forsok.length; i++) {
       //      System.out.println(forsok[i]);
       //  }
