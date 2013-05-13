@@ -95,8 +95,9 @@ class Traad extends Thread {
 
     }
 
-    void pushSorter() {
+    void pushSorter(String[] s) {
 
+        ferdig.add(s);
     	antallFerdige++;
     	antallTrader--;
 
@@ -114,6 +115,7 @@ class Traad extends Thread {
     }
 
     public String[] flett(String[] tmp1, String [] tmp2) {
+        //Skal flyttes
     	int lengde = tmp1.length + tmp2.length;
 
     	String[] flettet = new String[lengde];
@@ -197,12 +199,48 @@ class Traad extends Thread {
 
     }
 
+    void sort(String[] s, int start, int slutt) {
+        if (slutt > start) {
+            int pivot = partisjon(s, start, slutt);
+            sort(s, start, pivot-1);
+            sort(s, pivot, slutt);
+        }
+
+        pushSorter(s);
+
+    }
+
+    int partisjon(String[] s, int start, int slutt) {
+        String pivot = s[slutt];
+        int venstre = start;
+        int hoyre = slutt;
+        String tmp = "";
+        do {
+            while ((s[venstre].compareTo(pivot) <= 0) && (venstre < slutt))
+                venstre++;
+            while ((s[hoyre].compareTo(pivot) > 0) && (hoyre > start))
+                hoyre--;
+            if (venstre < hoyre) {
+                tmp = s[venstre];
+                s[venstre] = s[slutt];
+                s[hoyre] = tmp;
+
+            }
+        } while (venstre < hoyre);
+        tmp = s[venstre];
+        s[venstre] = s[slutt];
+        s[slutt] = tmp;
+        return venstre;
+    }
+
+
     public void run() {
 
     	if(delt!=null) {
 		//System.out.println(delt.length);
 
-    		sorter();
+            sort(delt, 0, delt.length-1);
+    	//	sorter();
     	}
 
     	if(mor) {
