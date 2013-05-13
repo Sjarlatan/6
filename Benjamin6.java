@@ -65,6 +65,7 @@ class Sjef extends Thread {
     int modul = 0;
     int antallTrader = 0;
     int antallFlettet = 0;
+    int antallSortert = 0;
 
     Sjef(String[] ord, int y, int antallTrader, int modul) {//Rotkonstruktor
 
@@ -87,6 +88,28 @@ class Sjef extends Thread {
         boolean mor = true;
 
         opprett();
+
+    }
+
+    void pushSorter(String[] s) {
+
+
+             //   sjef.antallFlettet++;
+        antallTrader--;
+        antallSortert++;
+        ferdig.add(s);
+
+        if (antallSortert>1) {
+            String[] tmp1 = ferdig.poll();
+            String[] tmp2 = ferdig.poll();
+            antallSortert--;
+            antallSortert--;
+
+            fletter.flett(tmp1, tmp2);
+
+        }
+         //  System.out.println("Antall traader: " + sjef.antallTrader);
+           // System.out.println("Antall ferdige: " + sjef.antallFerdige);
 
     }
 
@@ -129,11 +152,11 @@ class Sjef extends Thread {
 
     public void run() {
 
-        String[] forsok = fletter.flett(total[0].delt, total[1].delt);
-            //System.out.println("Kommer jeg hit?");
-        for (int i = 0; i < forsok.length; i++) {
-            System.out.println(forsok[i]);
-        }
+     //   String[] forsok = fletter.flett(total[0].delt, total[1].delt);
+            System.out.println("Kommer jeg hit?");
+      //  for (int i = 0; i < forsok.length; i++) {
+      //      System.out.println(forsok[i]);
+      //  }
 
     }
 
@@ -147,31 +170,20 @@ class Traad extends Thread {
   //  int antallFerdige = 0;
   //  int antallFlettet = 0;
 
-        void pushSorter(String[] s) {
-
-            
-         //   sjef.antallFlettet++;
-            sjef.antallTrader--;
-            sjef.ferdig.add(s);
-     //  System.out.println("Antall traader: " + sjef.antallTrader);
-       // System.out.println("Antall ferdige: " + sjef.antallFerdige);
-
-        }
-
         Traad(String[] delt, Sjef sjef) {
-           this.delt = delt;
-           this.sjef = sjef;
+         this.delt = delt;
+         this.sjef = sjef;
      //   sjef.antallTrader++;
-           sorter = new Sorter(this);
-       }
+         sorter = new Sorter(this);
+     }
 
-       public void run() {
+     public void run() {
 
-           if(delt!=null) {
+         if(delt!=null) {
 		//System.out.println(delt.length);
 
             sorter.sort(delt, 0, delt.length-1);
-            pushSorter(delt);
+            sjef.pushSorter(delt);
     	//	sorter();
         }
 
