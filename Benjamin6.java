@@ -87,7 +87,7 @@ class Sjef extends Thread {
 
     }
 
-    void pushSorter(String[] s) {
+void pushSorter(String[] s) {
 
         traadTeller--;
         ferdig.add(s);
@@ -96,7 +96,8 @@ class Sjef extends Thread {
             String[] tmp1 = ferdig.poll();
             String[] tmp2 = ferdig.poll();
 
-            new Fletter(this, tmp1, tmp2).start();
+        antallFlettet++;
+      new Fletter(this, tmp1, tmp2).start();
 
         }
 
@@ -105,7 +106,7 @@ class Sjef extends Thread {
     void pushFlett(String[] s) {
 
         ferdig.add(s);
-        antallFlettet++;
+        antallFlettet--;
 
     }
 
@@ -143,7 +144,11 @@ class Sjef extends Thread {
 
         opprett();
 
-        if(ferdig.size()==1) {
+        while(traadTeller > 0 && antallFlettet > 0) {
+            Thread.yield();
+        }
+
+     //  if(ferdig.size()==1) {
 
             String[] lost = ferdig.poll();
             for (int i = 0; i<lost.length; i++) {
@@ -152,7 +157,7 @@ class Sjef extends Thread {
 
             }
 
-        }
+      //  }
 
      //   String[] forsok = fletter.flett(total[0].delt, total[1].delt);
       //  System.out.println("Kommer jeg hit?");
@@ -166,18 +171,18 @@ class Sjef extends Thread {
 
 class SorterTraad extends Thread {
 
-   Sorter sorter;
+ Sorter sorter;
         String[] delt;//Oppdelt liste for hver traad
         Sjef sjef;
 
         SorterTraad(String[] delt, Sjef sjef) {
-           this.delt = delt;
-           this.sjef = sjef;
-       }
+         this.delt = delt;
+         this.sjef = sjef;
+     }
 
-       public void run() {
+     public void run() {
 
-           if(delt!=null) {
+         if(delt!=null) {
 
             sort(delt, 0, delt.length-1);
             sjef.pushSorter(delt);
