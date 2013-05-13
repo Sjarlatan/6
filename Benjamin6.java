@@ -59,6 +59,7 @@ class Traad extends Thread {
 	Traad[] total;//Traadarray med oversikt over alle traader
 
 	Fletter fletter;
+    Sorter sorter;
 	ArrayBlockingQueue <String[]> ferdig;
 
 	boolean mor = false;//Kun starttraaden er sjef.
@@ -97,7 +98,7 @@ class Traad extends Thread {
 
     void pushSorter(String[] s) {
 
-        ferdig.add(s);
+        sjef.ferdig.add(s);
     	antallFerdige++;
     	antallTrader--;
 
@@ -112,45 +113,7 @@ class Traad extends Thread {
     Traad(String[] delt, Traad sjef) {
     	this.delt = delt;
     	this.sjef = sjef;
-    }
-
-    public String[] flett(String[] tmp1, String [] tmp2) {
-        //Skal flyttes
-    	int lengde = tmp1.length + tmp2.length;
-
-    	String[] flettet = new String[lengde];
-
-    	int a = 0;
-    	int b = 0;
-
-    	for (int i = 0; i < flettet.length; i++) {
-    		if (a < tmp1.length) {
-    			if (b < tmp2.length) {
-    				if (tmp1[a].compareTo(tmp2[b]) < 0) {
-    					flettet[i] = tmp1[a];
-    					a++;
-    				} else {
-    					flettet[i] = tmp2[b];
-    					b++;
-    				}
-    			} else {
-    				while(a < tmp1.length) {
-    					flettet[i]  = tmp1[a];
-    					a++;
-    					i++;
-    				} 
-    			}
-    		} else {
-    			while(b < tmp2.length) {
-    				flettet[i]  = tmp2[b];
-    				b++;
-    				i++;
-    			} 
-    		}
-    	}
-
-    	return flettet;
-
+        sorter = new Sorter(this);
     }
 
     public void opprett() {
@@ -183,20 +146,41 @@ class Traad extends Thread {
 
     }
 
-    public void sorter() {
+    public void run() {
 
-    //	String lager;
-    //	String tmp;
+    	if(delt!=null) {
+		//System.out.println(delt.length);
 
-    	if (delt!=null) {
+            sorter.sort(delt, 0, delt.length-1);
+            pushSorter(delt);
+    	//	sorter();
+    	}
 
-    		String tmp[] = new String[delt.length]; 
+    	if(mor) {
 
-//tmp1[a].compareTo(tmp2[b]) < 0
-    		//Quicksort!
+    		String[] forsok = fletter.flett(total[0].delt, total[1].delt);
+    		//System.out.println("Kommer jeg hit?");
+    		for (int i = 0; i < forsok.length; i++) {
+    			System.out.println(forsok[i]);
+    		}
 
     	}
 
+    }
+
+}
+
+class Sorter extends Thread {
+
+    Traad hovedtraad;
+    Sorter(Traad traad){
+
+        hovedtraad = traad;
+
+    }
+
+    public void run() {
+        //?
     }
 
     void sort(String[] s, int start, int slutt) {
@@ -205,8 +189,6 @@ class Traad extends Thread {
             sort(s, start, pivot-1);
             sort(s, pivot, slutt);
         }
-
-        pushSorter(s);
 
     }
 
@@ -233,67 +215,46 @@ class Traad extends Thread {
         return venstre;
     }
 
-
-    public void run() {
-
-    	if(delt!=null) {
-		//System.out.println(delt.length);
-
-            sort(delt, 0, delt.length-1);
-    	//	sorter();
-    	}
-
-    	if(mor) {
-
-    		String[] forsok = flett(total[0].delt, total[1].delt);
-    		//System.out.println("Kommer jeg hit?");
-    		for (int i = 0; i < forsok.length; i++) {
-    			System.out.println(forsok[i]);
-    		}
-
-    	}
-
-    }
-
 }
 
 class Fletter extends Thread {
 
-	   public String[] flett(String[] tmp1, String [] tmp2) {
-    	int lengde = tmp1.length + tmp2.length;
 
-    	String[] flettet = new String[lengde];
+    public String[] flett(String[] tmp1, String [] tmp2) {
+        int lengde = tmp1.length + tmp2.length;
 
-    	int a = 0;
-    	int b = 0;
+        String[] flettet = new String[lengde];
 
-    	for (int i = 0; i < flettet.length; i++) {
-    		if (a < tmp1.length) {
-    			if (b < tmp2.length) {
-    				if (tmp1[a].compareTo(tmp2[b]) < 0) {
-    					flettet[i] = tmp1[a];
-    					a++;
-    				} else {
-    					flettet[i] = tmp2[b];
-    					b++;
-    				}
-    			} else {
-    				while(a < tmp1.length) {
-    					flettet[i]  = tmp1[a];
-    					a++;
-    					i++;
-    				} 
-    			}
-    		} else {
-    			while(b < tmp2.length) {
-    				flettet[i]  = tmp2[b];
-    				b++;
-    				i++;
-    			} 
-    		}
-    	}
+        int a = 0;
+        int b = 0;
 
-    	return flettet;
+        for (int i = 0; i < flettet.length; i++) {
+            if (a < tmp1.length) {
+                if (b < tmp2.length) {
+                    if (tmp1[a].compareTo(tmp2[b]) < 0) {
+                        flettet[i] = tmp1[a];
+                        a++;
+                    } else {
+                        flettet[i] = tmp2[b];
+                        b++;
+                    }
+                } else {
+                    while(a < tmp1.length) {
+                        flettet[i]  = tmp1[a];
+                        a++;
+                        i++;
+                    } 
+                }
+            } else {
+                while(b < tmp2.length) {
+                    flettet[i]  = tmp2[b];
+                    b++;
+                    i++;
+                } 
+            }
+        }
+
+        return flettet;
 
     }
 
