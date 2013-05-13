@@ -15,6 +15,8 @@ class Benjamin6 {
 		String to = "";
 		String tre = "";
 
+		//ArrayBlockingQueue<String[]> ferdiger = new ArrayBlockingQueue<String[]>(10);
+
 		int tradTeller = 0;
 		int antallTrader = 10;
 
@@ -82,7 +84,7 @@ class Traad extends Thread {
 
     	fletter = new Fletter();
 
-    	ferdig = new ArrayBlockingQueue(antallTrader);
+    	ferdig = new ArrayBlockingQueue<String[]>(antallTrader);
 
     	sta = 0;
     	slu = minsteLengde-1;//Fra null, ikke 1.
