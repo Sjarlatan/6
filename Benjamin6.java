@@ -128,6 +128,7 @@ class Traad extends Thread {
     		//System.out.format("%d Start %d slutt %d\n", i, sta, slu);
 
     		total[i] = new Traad(Arrays.copyOfRange(liste, sta, slu));
+    		//Bruker copyOfRange da selvprog av den ville blitt unodig tidkrevende og langt.
 
     		//System.out.println(total[i].delt.length);
 
@@ -148,6 +149,9 @@ class Traad extends Thread {
 
     	if (delt!=null) {
 
+    	String tmp[] = new String[delt.length]; 
+
+//tmp1[a].compareTo(tmp2[b]) < 0
     		//Quicksort!
 
     	}
