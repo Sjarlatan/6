@@ -51,7 +51,6 @@ class Sjef extends Thread {
     int minsteLengde;
 
     String[] liste;//Liste med alle ord
-    String[] delt;//Oppdelt liste for hver traad
 
     Traad[] total;//Traadarray med oversikt over alle traader
 
@@ -60,13 +59,12 @@ class Sjef extends Thread {
 
     boolean mor = false;//Kun starttraaden er sjef.
 
-    Traad sjef;
-
     int sta = 0;//Start
     int slu = 0;//Slutt
 
     int modul = 0;
     int antallTrader = 0;
+    int antallFlettet = 0;
 
     Sjef(String[] ord, int y, int antallTrader, int modul) {//Rotkonstruktor
 
@@ -79,7 +77,7 @@ class Sjef extends Thread {
         this.antallTrader = antallTrader;
         this.modul = modul;
 
-        fletter = new Fletter();
+        fletter = new Fletter(this);
 
         ferdig = new ArrayBlockingQueue<String[]>(antallTrader);
 
@@ -92,7 +90,13 @@ class Sjef extends Thread {
 
     }
 
-        public void opprett() {
+    void pushFlett() {
+
+        antallFlettet++;
+
+    }
+
+    public void opprett() {
        // System.out.format("Start system %d\n", liste.length);
         int i = 0;
 
@@ -103,6 +107,7 @@ class Sjef extends Thread {
             for (; i<modul; i++) {
                // System.out.format("%d X Start %d slutt %d: ML: %d\n", i, sta, slu, minsteLengde);
                 total[i] = new Traad(Arrays.copyOfRange(liste, sta, slu), this);
+                antallTrader++;//usikker paa plassering
                 sta = slu+1;
                 slu = slu + minsteLengde;
                 total[i].start();
@@ -124,11 +129,11 @@ class Sjef extends Thread {
 
     public void run() {
 
-            String[] forsok = fletter.flett(total[0].delt, total[1].delt);
+        String[] forsok = fletter.flett(total[0].delt, total[1].delt);
             //System.out.println("Kommer jeg hit?");
-            for (int i = 0; i < forsok.length; i++) {
-                System.out.println(forsok[i]);
-            }
+        for (int i = 0; i < forsok.length; i++) {
+            System.out.println(forsok[i]);
+        }
 
     }
 
@@ -137,41 +142,38 @@ class Sjef extends Thread {
 class Traad extends Thread {
 
     Sorter sorter;
-    int antallFerdige = 0;
-    int antallFlettet = 0;
+        String[] delt;//Oppdelt liste for hver traad
+        Sjef sjef;
+  //  int antallFerdige = 0;
+  //  int antallFlettet = 0;
 
-    void pushSorter(String[] s) {
+        void pushSorter(String[] s) {
 
-        sjef.ferdig.add(s);
-    	antallFerdige++;
-    	antallTrader--;
-        System.out.println("Antall traader: " + antallTrader);
-        System.out.println("Antall ferdige: " + antallFerdige);
+            
+         //   sjef.antallFlettet++;
+            sjef.antallTrader--;
+            sjef.ferdig.add(s);
+     //  System.out.println("Antall traader: " + sjef.antallTrader);
+       // System.out.println("Antall ferdige: " + sjef.antallFerdige);
 
-    }
+        }
 
-    void pushFlett() {
+        Traad(String[] delt, Sjef sjef) {
+           this.delt = delt;
+           this.sjef = sjef;
+     //   sjef.antallTrader++;
+           sorter = new Sorter(this);
+       }
 
-    	antallFlettet++;
+       public void run() {
 
-    }
-
-    Traad(String[] delt, Traad sjef) {
-    	this.delt = delt;
-    	this.sjef = sjef;
-        sjef.antallTrader++;
-        sorter = new Sorter(this);
-    }
-
-    public void run() {
-
-    	if(delt!=null) {
+           if(delt!=null) {
 		//System.out.println(delt.length);
 
             sorter.sort(delt, 0, delt.length-1);
             pushSorter(delt);
     	//	sorter();
-    	}
+        }
 
     }
 
@@ -226,6 +228,11 @@ class Sorter extends Thread {
 
 class Fletter extends Thread {
 
+    Sjef sjef;
+
+    Fletter(Sjef sjef) {
+        this.sjef = sjef;
+    }
 
     public String[] flett(String[] tmp1, String [] tmp2) {
         int lengde = tmp1.length + tmp2.length;
