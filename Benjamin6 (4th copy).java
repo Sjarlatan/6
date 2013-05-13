@@ -46,19 +46,23 @@ class Benjamin6 {
 
 }
 
-class Sjef extends Thread {
+class Traad extends Thread {
 
-    int minsteLengde;
+	int antallFerdige = 0;
+	int antallFlettet = 0;
 
-    String[] liste;//Liste med alle ord
-    String[] delt;//Oppdelt liste for hver traad
+	int minsteLengde;
 
-    Traad[] total;//Traadarray med oversikt over alle traader
+	String[] liste;//Liste med alle ord
+	String[] delt;//Oppdelt liste for hver traad
 
-    Fletter fletter;
-    ArrayBlockingQueue <String[]> ferdig;
+	Traad[] total;//Traadarray med oversikt over alle traader
 
-    boolean mor = false;//Kun starttraaden er sjef.
+	Fletter fletter;
+    Sorter sorter;
+	ArrayBlockingQueue <String[]> ferdig;
+
+	boolean mor = false;//Kun starttraaden er sjef.
 
     Traad sjef;
 
@@ -68,77 +72,29 @@ class Sjef extends Thread {
     int modul = 0;
     int antallTrader = 0;
 
-    Sjef(String[] ord, int y, int antallTrader, int modul) {//Rotkonstruktor
+    Traad(String[] ord, int y, int antallTrader, int modul) {//Rotkonstruktor
 
-    //  sta = 0;
-    //  slu = ord.length;
+	//	sta = 0;
+	//	slu = ord.length;
 
-        liste = ord;
-        minsteLengde= y;
-        total = new Traad[antallTrader];
-        this.antallTrader = antallTrader;
-        this.modul = modul;
+    	liste = ord;
+    	minsteLengde= y;
+    	total = new Traad[antallTrader];
+    	this.antallTrader = antallTrader;
+    	this.modul = modul;
 
-        fletter = new Fletter();
+    	fletter = new Fletter();
 
-        ferdig = new ArrayBlockingQueue<String[]>(antallTrader);
+    	ferdig = new ArrayBlockingQueue<String[]>(antallTrader);
 
-        sta = 0;
-        slu = minsteLengde-1;//Fra null, ikke 1.
+    	sta = 0;
+    	slu = minsteLengde-1;//Fra null, ikke 1.
 
-        boolean mor = true;
+    	boolean mor = true;
 
-        opprett();
-
-    }
-
-        public void opprett() {
-       // System.out.format("Start system %d\n", liste.length);
-        int i = 0;
-
-        if (modul > 0) {
-            minsteLengde++;
-            slu++;
-
-            for (; i<modul; i++) {
-               // System.out.format("%d X Start %d slutt %d: ML: %d\n", i, sta, slu, minsteLengde);
-                total[i] = new Traad(Arrays.copyOfRange(liste, sta, slu), this);
-                sta = slu+1;
-                slu = slu + minsteLengde;
-                total[i].start();
-            }
-            minsteLengde--;
-        }
-
-        for (; i<antallTrader; i++) {
-           // System.out.format("%d Start %d slutt %d: ML: %d\n", i, sta, slu, minsteLengde);
-
-            total[i] = new Traad(Arrays.copyOfRange(liste, sta, slu), this);
-            sta = slu+1;
-            slu = slu + minsteLengde;
-
-            total[i].start();
-        }
+    	opprett();
 
     }
-
-    public void run() {
-
-            String[] forsok = fletter.flett(total[0].delt, total[1].delt);
-            //System.out.println("Kommer jeg hit?");
-            for (int i = 0; i < forsok.length; i++) {
-                System.out.println(forsok[i]);
-            }
-
-    }
-
-}
-
-class Traad extends Thread {
-
-    Sorter sorter;
-    int antallFerdige = 0;
-    int antallFlettet = 0;
 
     void pushSorter(String[] s) {
 
@@ -163,6 +119,36 @@ class Traad extends Thread {
         sorter = new Sorter(this);
     }
 
+    public void opprett() {
+       // System.out.format("Start system %d\n", liste.length);
+    	int i = 0;
+
+    	if (modul > 0) {
+    		minsteLengde++;
+    		slu++;
+
+    		for (; i<modul; i++) {
+               // System.out.format("%d X Start %d slutt %d: ML: %d\n", i, sta, slu, minsteLengde);
+    			total[i] = new Traad(Arrays.copyOfRange(liste, sta, slu), this);
+    			sta = slu+1;
+    			slu = slu + minsteLengde;
+    			total[i].start();
+    		}
+    		minsteLengde--;
+    	}
+
+    	for (; i<antallTrader; i++) {
+           // System.out.format("%d Start %d slutt %d: ML: %d\n", i, sta, slu, minsteLengde);
+
+    		total[i] = new Traad(Arrays.copyOfRange(liste, sta, slu), this);
+    		sta = slu+1;
+    		slu = slu + minsteLengde;
+
+    		total[i].start();
+    	}
+
+    }
+
     public void run() {
 
     	if(delt!=null) {
@@ -171,6 +157,16 @@ class Traad extends Thread {
             sorter.sort(delt, 0, delt.length-1);
             pushSorter(delt);
     	//	sorter();
+    	}
+
+    	if(mor) {
+
+    		String[] forsok = fletter.flett(total[0].delt, total[1].delt);
+    		//System.out.println("Kommer jeg hit?");
+    		for (int i = 0; i < forsok.length; i++) {
+    			System.out.println(forsok[i]);
+    		}
+
     	}
 
     }
@@ -297,8 +293,8 @@ class Innleser {
 
 			}
 
-			Sjef sjef = new Sjef(liste, y, antallTrader, modul);
-			sjef.start();
+			Traad traad = new Traad(liste, y, antallTrader, modul);
+			traad.start();
 
 		} catch (FileNotFoundException e) {
 			System.out.println("Fil 1 ikke funnet.");
