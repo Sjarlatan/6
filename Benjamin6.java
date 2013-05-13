@@ -75,7 +75,7 @@ class Sjef extends Thread {
         this.antallTrader = antallTrader;
         this.modul = modul;
 
-        fletter = new Fletter(this);
+       // fletter = new Fletter(this);
 
         ferdig = new ArrayBlockingQueue<String[]>(antallTrader);
 
@@ -89,11 +89,14 @@ class Sjef extends Thread {
         antallTrader--;
         ferdig.add(s);
 
-        if (ferdig.remainingCapacity()>1) {
+        if (ferdig.size()>1) {
             String[] tmp1 = ferdig.poll();
             String[] tmp2 = ferdig.poll();
 
-            pushFlett(fletter.flett(tmp1, tmp2));
+            fletter = new Fletter(this, tmp1, tmp2);
+            fletter.start();
+
+          //  pushFlett(fletter.flett(tmp1, tmp2));
 
         }
 
@@ -142,7 +145,7 @@ class Sjef extends Thread {
         opprett();
 
      //   String[] forsok = fletter.flett(total[0].delt, total[1].delt);
-            System.out.println("Kommer jeg hit?");
+        System.out.println("Kommer jeg hit?");
       //  for (int i = 0; i < forsok.length; i++) {
       //      System.out.println(forsok[i]);
       //  }
@@ -153,18 +156,18 @@ class Sjef extends Thread {
 
 class SorterTraad extends Thread {
 
-    Sorter sorter;
+   Sorter sorter;
         String[] delt;//Oppdelt liste for hver traad
         Sjef sjef;
 
         SorterTraad(String[] delt, Sjef sjef) {
-         this.delt = delt;
-         this.sjef = sjef;
-     }
+           this.delt = delt;
+           this.sjef = sjef;
+       }
 
-     public void run() {
+       public void run() {
 
-         if(delt!=null) {
+           if(delt!=null) {
 
             sort(delt, 0, delt.length-1);
             sjef.pushSorter(delt);
@@ -173,7 +176,7 @@ class SorterTraad extends Thread {
 
     }
 
-        void sort(String[] s, int start, int slutt) {
+    void sort(String[] s, int start, int slutt) {
         if (slutt > start) {
             int pivot = partisjon(s, start, slutt);
             sort(s, start, pivot-1);
@@ -210,9 +213,20 @@ class SorterTraad extends Thread {
 class Fletter extends Thread {
 
     Sjef sjef;
+    String[] array1;
+    String[] array2;
 
-    Fletter(Sjef sjef) {
+    Fletter(Sjef sjef, String[] tmp1, String[] tmp2) {
         this.sjef = sjef;
+        array1 = tmp1;
+        array2 = tmp2;
+    }
+
+    public void run() {
+
+        String[] resultat = flett(array1, array2);
+        sjef.pushFlett(resultat);
+
     }
 
     public String[] flett(String[] tmp1, String [] tmp2) {
