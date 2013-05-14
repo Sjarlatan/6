@@ -1,12 +1,8 @@
-
 import java.io.*;
 import java.util.*;
 import java.util.Scanner;
-//import java.lang.Object.*;
 import java.util.concurrent.*;
-
-//sortThread extend thread
-//threadpeker
+import java.io.FileWriter;
 
 class Benjamin6 {
 	public static void main (String[] args) {
@@ -68,17 +64,12 @@ class Sjef extends Thread {
 
     Sjef(String[] ord, int y, int antallTrader, int modul) {//Rotkonstruktor
 
-    //  sta = 0;
-    //  slu = ord.length;
-
         liste = ord;
         minsteLengde= y;
         total = new SorterTraad[antallTrader];
         this.antallTrader = antallTrader;
         traadTeller = antallTrader;
         this.modul = modul;
-
-       // fletter = new Fletter(this);
 
         ferdig = new ArrayBlockingQueue<String[]>(antallTrader);
 
@@ -87,27 +78,29 @@ class Sjef extends Thread {
 
     }
 
-void pushSorter(String[] s) {
-
-        traadTeller--;
-        ferdig.add(s);
-
+    synchronized void flettOmMulig() throws InterruptedException {
         if (ferdig.size()>1) {
-            String[] tmp1 = ferdig.poll();
-            String[] tmp2 = ferdig.poll();
+            String[] tmp1 = ferdig.take();
+            String[] tmp2 = ferdig.take();
 
-        antallFlettet++;
-      new Fletter(this, tmp1, tmp2).start();
-
+            antallFlettet++;
+            new Fletter(this, tmp1, tmp2).start();
         }
-
     }
 
-    void pushFlett(String[] s) {
+    void pushSorter(String[] s) throws InterruptedException {
+        addFerdig(s);
+        traadTeller--;
+    }
 
+    void addFerdig(String[] s) throws InterruptedException {
         ferdig.add(s);
-        antallFlettet--;
+        flettOmMulig();
+    }
 
+    void pushFlett(String[] s) throws InterruptedException {
+        addFerdig(s);
+        antallFlettet--;
     }
 
     public void opprett() {
@@ -144,26 +137,37 @@ void pushSorter(String[] s) {
 
         opprett();
 
-        while(traadTeller > 0 && antallFlettet > 0) {
+        while(traadTeller > 0 || antallFlettet > 0) {
             Thread.yield();
         }
 
-     //  if(ferdig.size()==1) {
+  // File fil1 = new File("fil1.txt");
 
-            String[] lost = ferdig.poll();
-            for (int i = 0; i<lost.length; i++) {
+    //FileWriter f = new FileWriter(fil1);
 
-                System.out.println(lost[i]);
+        PrintWriter writer;
 
+        try {
+        writer = new PrintWriter("out.txt", "UTF-8");
+
+                //writer.println("The second line");
+
+        String[] lost = ferdig.poll();
+        for (int i = 0; i<lost.length; i++) {
+
+            writer.println(lost[i]);
+
+         //   System.out.println(lost[i]);
+      // f.write(lost[i]);
+
+        }
+
+        writer.close();
+        
+    } catch (IOException e) {
+                System.out.println("Fil feil.");     
             }
-
-      //  }
-
-     //   String[] forsok = fletter.flett(total[0].delt, total[1].delt);
-      //  System.out.println("Kommer jeg hit?");
-      //  for (int i = 0; i < forsok.length; i++) {
-      //      System.out.println(forsok[i]);
-      //  }
+        
 
     }
 
@@ -171,7 +175,6 @@ void pushSorter(String[] s) {
 
 class SorterTraad extends Thread {
 
- Sorter sorter;
         String[] delt;//Oppdelt liste for hver traad
         Sjef sjef;
 
@@ -184,42 +187,47 @@ class SorterTraad extends Thread {
 
          if(delt!=null) {
 
-            sort(delt, 0, delt.length-1);
-            sjef.pushSorter(delt);
+            try { 
+                sort(delt, 0, delt.length-1);
+                sjef.pushSorter(delt);
+            }
+            catch (InterruptedException e) {
+                System.out.println("Interrupted");     
+            }
 
         }
 
     }
 
     void sort(String[] s, int start, int slutt) {
-        if (slutt > start) {
-            int pivot = partisjon(s, start, slutt);
+        if (start < slutt) {
+            int pivot = partisjon(s, start, slutt, ((start + slutt)/2));
             sort(s, start, pivot-1);
-            sort(s, pivot, slutt);
+            sort(s, pivot + 1, slutt);
         }
-
     }
 
-    int partisjon(String[] s, int start, int slutt) {
-        String pivot = s[slutt];
-        int venstre = start;
-        int hoyre = slutt;
-        String tmp = "";
-        do {
-            while ((s[venstre].compareTo(pivot) <= 0) && (venstre < slutt))
-                venstre++;
-            while ((s[hoyre].compareTo(pivot) > 0) && (hoyre > start))
-                hoyre--;
-            if (venstre < hoyre) {
-                tmp = s[venstre];
-                s[venstre] = s[slutt];
-                s[hoyre] = tmp;
+    int partisjon(String[] s, int venstre, int hoyre, int pivot) {
+        String pivotVerdi = s[pivot];
 
+        s[pivot] = s[hoyre];
+        s[hoyre] = pivotVerdi;
+        String tmp = "";
+
+        
+        for(int i = venstre; i < hoyre; i++) {
+            if (s[i].compareTo(pivotVerdi) <= 0) {
+                tmp = s[i];
+                s[i] = s[venstre];
+                s[venstre] = tmp;
+                venstre++;
             }
-        } while (venstre < hoyre);
+        }
+
         tmp = s[venstre];
-        s[venstre] = s[slutt];
-        s[slutt] = tmp;
+        s[venstre] = s[hoyre];
+        s[hoyre] = tmp;
+
         return venstre;
     }
 
@@ -239,8 +247,15 @@ class Fletter extends Thread {
 
     public void run() {
 
-        String[] resultat = flett(array1, array2);
-        sjef.pushFlett(resultat);
+
+        try { 
+            String[] resultat = flett(array1, array2);
+            sjef.pushFlett(resultat);
+        }
+        catch (InterruptedException e) {
+            System.out.println("Interrupted");     
+        }
+
 
     }
 
